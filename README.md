@@ -11,6 +11,10 @@
 5. Houdini reads the data and evaluates the DOP network for it. Then writes localized USD data back to disk.
 6. Composition Arc is written using main controller to add the simulated geometry back into the scene.
 
+# Master Scene script demo output
+
+https://github.com/user-attachments/assets/354e573c-fe75-44ec-b510-b29ba3c954da
+
 # References:
 
 1. [https://openusd.org/dev/tut_xforms.html](https://openusd.org/dev/tut_xforms.html)
