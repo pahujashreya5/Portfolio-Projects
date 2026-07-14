@@ -14,6 +14,7 @@
 # References:
 
 1. [https://openusd.org/dev/tut_xforms.html](https://openusd.org/dev/tut_xforms.html)
+2. [https://github.com/kiryha/Houdini/wiki/pixar-usd-python-api](https://github.com/kiryha/Houdini/wiki/pixar-usd-python-api)
 
 
 
