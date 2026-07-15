@@ -21,5 +21,12 @@
 2. [https://github.com/kiryha/Houdini/wiki/pixar-usd-python-api](https://github.com/kiryha/Houdini/wiki/pixar-usd-python-api)
 
 
+### PENDING TASKS
+- naming conventions to be corrected
+- all demo vids to be added
+- diagram workflow to be added
+- add tests
+
+
 
 
