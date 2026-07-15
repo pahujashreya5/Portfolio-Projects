@@ -34,36 +34,45 @@ def CheckCollisionUsingBoundingBoxes(bbox_cache, ground, sphere, frame):
 
     # get axis aligned bounding boxes for both prims
     ground_AABB=ground_world_bounds.ComputeAlignedBox()
+    if ground_AABB.IsEmpty():
+        print(f"ground AABB is empty")
+        # return False, None
     sphere_AABB=sphere_world_bounds.ComputeAlignedBox()
+    if ground_AABB.IsEmpty():
+        print(f"sphere AABB is empty")
+        return False, None
 
     # C++ implementation of finding intersection of 2 bounding boxes in 3D: https://www.pbr-book.org/3ed-2018/Geometry_and_Transformations/Bounding_Boxes
     # openusd has a built in function that we can use simply: GetIntersection
-    intersection_vol=sphere_AABB.GetIntersection(ground_AABB)
+    intersection_vol=Gf.Range3d.GetIntersection(ground_AABB, sphere_AABB)
 
-    if not intersection_vol.isEmpty():
+    if not intersection_vol.IsEmpty():
         contact_point=intersection_vol.GetMidpoint()
         # can return a pair of values: first is whether we have found an intersection or not, and the second value stores coordinate of the midpoint of the volume where both prims intersect. (we say volume because we are working in 3D)
+        print("contact point found!")
         return True, contact_point
-
+    print("NO contact point found!")
     return False, None
 
 def FindHit(stage, ground, sphere):
     # we write the loop to find when collision happens using our function
 
     # TimeCode.Default() is used for initialization to tell that a time code will be written here later
-    # the Tokens parameter tells us the PURPOSE of bbox_cache. default means it can be used anywhere. the other values could be proxy, render or guide.
-    bbox_cache=UsdGeom.BBoxCache(Usd.TimeCode.Default(), [Usd.Tokens.default_])
-
+    # the Tokens parameter tells us the PURPOSE of bbox_cache. automatic means it can be used anywhere. the other values could be proxy, render or guide.
+    # example here: https://docs.omniverse.nvidia.com/dev-guide/latest/programmer_ref/usd/transforms/compute-prim-bounding-box.html
+    bbox_cache=UsdGeom.BBoxCache(Usd.TimeCode.Default(), ['default', 'automatic'])
+    print("init bbox cache done")
     # the function GetStartTimeCode can be used to get the beginning time code of our animation timeline from the master scnee that we created
-    start_time_code=stage.GetStartTimeCode
-    end_time_code=stage.GetEndTimeCode
+    start_time_code=stage.GetStartTimeCode()
+    end_time_code=stage.GetEndTimeCode()
     # convert to frame so that we can pass it to our function
     start_frame=int(start_time_code)
     end_frame=int(end_time_code)
 
-    for frame in range (start_frame, end_frame+1): # for inclusive end range
+    for frame in range (start_frame,end_frame+1): 
         is_hit, contact_point=CheckCollisionUsingBoundingBoxes(bbox_cache, ground, sphere, frame)
-        
+        print(bbox_cache,"\n")
+        # i stopped it at one collision for now
         if(is_hit):
             print(f"collision found at {contact_point[0], contact_point[1], contact_point[2]}")
             # we need the contact point to tell houdini where to create sim (origin point)
@@ -74,26 +83,19 @@ def FindHit(stage, ground, sphere):
 
 def CallSubProcessHython(ground_AABB, sphere_AABB):
     # wake up houdini in background
-
+    print(f"placehloder: calling houdini subprocess")
     return True # on correct execution
 
 
 if __name__=="__main__":
     stage, ground, sphere=RetrieveScene()
-    print(f"Successfully loaded stage: {stage}")
-    print(f"Found ground prim: {ground.GetName()}")
-    print(f"Found sphere prim: {sphere.GetName()}")
+    
+    hit_frame, hit_coordinates=FindHit(stage, ground, sphere)
 
-    [ground_AABB, sphere_AABB]=GetBoundingBoxes(ground, sphere)
-    if ground_AABB is not None and sphere_AABB is not None:
-        FindHit(ground_AABB, sphere_AABB)
+    if hit_frame is not None:
+        CallSubProcessHython(hit_frame, hit_coordinates)
     else:
-        print(f"unable to compute bounding boxes")
-
-    if FindHit is True:
-        CallSubProcessHython()
-    else:
-        print(f"no collision detected")
+        print(f"no collisions")
 
 
 
