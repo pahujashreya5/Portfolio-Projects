@@ -18,7 +18,11 @@ Things to understand before looking at the code: python, python for Houdini, ope
 
 # Notes
 
-1. using vex within to run with hython: i had to use vex to manually simulate the dust because popnet wouldn't load into my memory ue to system issues. using vex doesn't load and heavy dopnet with all its nodes and node types, and therefore the it executes super fast. of course, this is in fact taking a step backwards because solaris already has the option to create a popnet in just a few lines but i was not able to do this on my machine so i am leaving this note here for others. 
+1. using vex within to run with hython: i had to use vex to manually simulate the dust because popnet wouldn't load into my memory ue to system issues. using vex doesn't load and heavy dopnet with all its nodes and node types, and therefore the it executes super fast. of course, this is in fact taking a step backwards because solaris already has the option to create a popnet in just a few lines but i was not able to do this on my machine so i am leaving this note here for others.
+Also, this was very intersting for learning more about how houdini manages things. so popnet is not a c++ hardcoded node in houdini's codebase- it is an HDA (network of nodes in a package), which means it takes a while to load all of the assets when this is called. if, in any case, the load fails, then even accessing any one asset is not possible. in fact even when opening the Houdini application, it takes time to load because it is loading all of these HDAs.
+and since hython is instructed to boot as fast as possible, it might sometimes skip loading the HDAs at all, and we end up getting some error like 'a node type is not recognized'.
+another fix (other than manually vex scripting) is find and load the required library before we create the popnet. this makes sure hython already has access to the nodes before it ever executes. i will leave both these methods in the code and you can choose which one based on your usecase.
+something like a simple dust sim can be written with vex, but there is no point going by this method if your net is going to be complex. that would defeat the purpose of using hython (headless Houdini) at all.
 
 # References:
 
