@@ -25,6 +25,13 @@ another fix (other than manually vex scripting) is find and load the required li
 something like a simple dust sim can be written with vex, but there is no point going by this method if your net is going to be complex. that would defeat the purpose of using hython (headless Houdini) at all.
 2. using houdini apprentice so dust sim is exporting as .usdnc. not recognized so need to write a plugin using Sdf
 
+-> usdviewer not working for now. using quicklook mac
+```usdpyhthon initScript.py```
+
+```env -i HOME="$HOME"USER="$USER"PATH="/usr/bin:/bin:/usr/sbin:/sbin:/Applications/Houdini/Houdini21.0.700/Frameworks/Houdini.framework/Versions/Current/Resources/bin" hython intersectionEngine.py```
+
+to run intersectionEngine.py
+
 # References:
 
 1. [https://openusd.org/dev/tut_xforms.html](https://openusd.org/dev/tut_xforms.html)
