@@ -23,6 +23,7 @@ Also, this was very intersting for learning more about how houdini manages thing
 and since hython is instructed to boot as fast as possible, it might sometimes skip loading the HDAs at all, and we end up getting some error like 'a node type is not recognized'.
 another fix (other than manually vex scripting) is find and load the required library before we create the popnet. this makes sure hython already has access to the nodes before it ever executes. i will leave both these methods in the code and you can choose which one based on your usecase.
 something like a simple dust sim can be written with vex, but there is no point going by this method if your net is going to be complex. that would defeat the purpose of using hython (headless Houdini) at all.
+2. using houdini apprentice so dust sim is exporting as .usdnc. not recognized so need to write a plugin using Sdf
 
 # References:
 
