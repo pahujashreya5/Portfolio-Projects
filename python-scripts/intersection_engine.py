@@ -4,7 +4,7 @@ import os, subprocess
 from pxr import Usd, UsdGeom, Gf, Sdf
 
 def RetrieveScene():
-    path='./stage1.usda'
+    path='stage1.usda'
     stage=Usd.Stage.Open(path)
     if not stage:
         raise RuntimeError(f"Failed to open stage at path {path}")
@@ -89,6 +89,7 @@ def CallSubProcessHython(hit_frame, contact_point):
     x=f"{contact_point[0]:.3f}" # let's cut it off at 3 decimal places so that the string isn't too long and confusing for when we want to check it
     y=f"{contact_point[1]:.3f}"
     z=f"{contact_point[2]:.3f}"
+    #  coord_str = f"{hit_coordinates[0]} {hit_coordinates[1]} {hit_coordinates[2]}"
 
     # os executes this list of commands
     cmd = [
@@ -104,12 +105,11 @@ def CallSubProcessHython(hit_frame, contact_point):
     clean_env.pop("PYTHONPATH", None)
     clean_env.pop("DYLD_LIBRARY_PATH", None)
     clean_env.pop("PXR_PLUGINPATH_NAME", None)
-
+    clean_env.pop("DYLD_FRAMEWORK_PATH", None)
+    clean_env.pop("LD_LIBRARY_PATH", None)
     # execute subprocess & make suer checks are in place. make sure to put return statements for all the cases to be safe from os freezing etc
     try:
         subprocess.run(cmd, env=clean_env, check=True) # checks in case subprocess crashes. but our python won't crash because of process isolation :)
-        # add the dust sim payload to our master stage
-        AddPayloadToStage('stage1.usda', 'dust_sim.usd', hit_frame)
         print("success")
         return True
     except subprocess.CalledProcessError as e: # in case the subprocess houdini fails/crashes
@@ -122,28 +122,45 @@ def CallSubProcessHython(hit_frame, contact_point):
 
     return False # just a fallback
 
-def AddPayloadToStage(master_scene, sim, frame):
-    Sdf.FileFormat.RegisterFileExtensionForTarget("usdnc", "usd")
+def AddPayloadToStage(master_scene, sim_filepath, frame):
     # adding payload
-
-    stage=Usd.Stage.Open(master_scene)
+    stage=Usd.Stage.Open(master_scene, Usd.Stage.LoadAll)
+    print("loaded sim")
 
     sim_path=f"/Root/DustImpact_frame_{frame}"
     sim_prim=stage.DefinePrim(sim_path, "Xform")
 
-    sim_prim.GetPayloads().AddPayload(sim)
+    payload_asset = Sdf.Payload(sim_filepath)
+
+    sim_prim.GetPayloads().AddPayload(payload_asset)
+
+    current_end = stage.GetEndTimeCode()
+    required_end = float(frame + 24) 
+
+    if required_end > current_end:
+        stage.SetEndTimeCode(required_end)
+        print(f"Extended master stage timeline end from {current_end} to {required_end} to fit simulation.")
+    else:
+        print(f"Preserved existing stage timeline (Start: {stage.GetStartTimeCode()}, End: {current_end}).")
 
     # now save the final scene to disk
     stage.GetRootLayer().Save()
     print("successfully saved final scene with sim")
 
 if __name__=="__main__":
-    stage, ground, sphere=RetrieveScene()
+    stage_path='stage1.usda'
+    stage_obj, ground, sphere=RetrieveScene() 
     
-    hit_frame, hit_coordinates=FindHit(stage, ground, sphere)
+    hit_frame, hit_coordinates=FindHit(stage_obj, ground, sphere)
 
     if hit_frame is not None:
-        CallSubProcessHython(hit_frame, hit_coordinates)
+        subprocess_success=CallSubProcessHython(hit_frame, hit_coordinates)
+        if subprocess_success:
+            print("hit_frame is ", hit_frame)
+            print("hit_coordinate: ", hit_coordinates)
+            sim_cache_path = "/Users/shreyapahuja/USD_Projects/dust_sim.usdnc"
+            AddPayloadToStage(stage_path, sim_cache_path, hit_frame)
+            print("payload added!")
     else:
         print(f"no collisions")
 
