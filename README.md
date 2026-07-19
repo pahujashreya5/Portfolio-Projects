@@ -3,6 +3,8 @@
 ## Overview: Generates dust simulations without an artist ever touching the mouse.
 Things to understand before looking at the code: python, python for Houdini, openUSD basics, basic nets in Houdini, Solaris basics, os, some idea about hython
 
+<img width="3281" height="1575" alt="usd_project_flowchart" src="https://github.com/user-attachments/assets/262ee533-37f8-4e9f-8071-0c17d388b63a" />
+
 ## Planned Data/Instruction Flow:
 
 1. USD Stage sits in memory.
